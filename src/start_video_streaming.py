@@ -64,4 +64,3 @@ class VideoProducer():
 
 if __name__ == '__main__':
     videoProducer = VideoProducer()
-    videoProducer.start_streaming()
