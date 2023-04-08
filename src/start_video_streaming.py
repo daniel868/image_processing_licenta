@@ -18,7 +18,7 @@ def serializer(message):
     return json.dumps(message).encode('utf-8')
 
 
-class VideoProducer():
+class VideoProducer:
     def __init__(self):
         self.kafkaProducer = KafkaProducer(
             bootstrap_servers=prod_kafka_server,
