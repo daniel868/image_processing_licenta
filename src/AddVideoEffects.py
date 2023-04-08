@@ -17,9 +17,14 @@ class AddVideoEffects():
         return rgbFrame
 
     def processJPG_80(self, frame):
-        jpeg_quality = 80
-        jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality]
-        ret, frame_jpeg_80 = cv2.imencode('.jpg', frame, jpeg_params)
-        decompressed_frame = cv2.imdecode(frame_jpeg_80, cv2.IMREAD_COLOR)
+        return self.processJPG(frame, 80)
+
+    def processJPG_10(self, frame):
+        return self.processJPG(frame, 10)
+
+    def processJPG(self, frame, quality):
+        jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, quality]
+        ret, frame_jpeg = cv2.imencode('.jpg', frame, jpeg_params)
+        decompressed_frame = cv2.imdecode(frame_jpeg, cv2.IMREAD_COLOR)
 
         return decompressed_frame
