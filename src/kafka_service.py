@@ -6,7 +6,7 @@ dev_kafka_server = 'localhost:9092'
 video_topic = 'demotopic'
 auth_topic = 'authTopic'
 start_stop_topic = 'start_stop_topic'
-test='test'
+
 prod_kafka_server = '192.168.1.136:9092'
 
 class KafkaService():
