@@ -26,12 +26,31 @@ def video():
         if (is_authenticated == False):
             return redirect(url_for('loginFailed'))
 
-    print('Redirecting to video endpoint')
+    print('Redirecting to video jpg endpoint')
     return Response(
         kafka_service.produce_video_stream(),
         mimetype='multipart/x-mixed-replace; boundary=frame'
     )
 
+@app.route('/video-png', methods=['GET'])
+def video_png():
+    global is_authenticated
+    args = request.args
+    if (args.get("userToken") is None):
+        return redirect(url_for('loginFailed'))
+
+    if (is_authenticated == False):
+
+        is_authenticated = isUserAuthenticated()
+
+        if (is_authenticated == False):
+            return redirect(url_for('loginFailed'))
+
+    print('Redirecting to video png endpoint')
+    return Response(
+        kafka_service.produce_png_stream(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
 
 def isUserAuthenticated():
     response = requests.post(

@@ -1,7 +1,7 @@
 import cv2
 
 
-class AddVideoEffects():
+class AddVideoEffects:
 
     def processGrayscaleFrame(self, frame):
         return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -16,15 +16,30 @@ class AddVideoEffects():
                                                                                                         0]
         return rgbFrame
 
-    def processJPG_80(self, frame):
-        return self.processJPG(frame, 80)
+    def processJPG(self, frame, streaming_info):
+        effectFrame = self.applyEffect(frame,streaming_info['effectType'])
+        if streaming_info['compressionLevel'] != -1:
+            jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, streaming_info['compressionLevel']]
+            ret, frame_jpeg = cv2.imencode('.jpg', effectFrame, jpeg_params)
+        else:
+            ret, frame_jpeg = cv2.imencode('.jpg', effectFrame)
+        return frame_jpeg
 
-    def processJPG_10(self, frame):
-        return self.processJPG(frame, 10)
+    def processPNG(self, frame, streaming_info):
+        effectFrame = self.applyEffect(frame, streaming_info['effectType'])
+        if streaming_info['compressionLevel'] != -1:
+            png_params = [cv2.IMWRITE_PNG_COMPRESSION, streaming_info['compressionLevel']]
+            ret, frame_png = cv2.imencode('.png', effectFrame, png_params)
+        else:
+            ret, frame_png = cv2.imencode('.png', effectFrame)
 
-    def processJPG(self, frame, quality):
-        jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, quality]
-        ret, frame_jpeg = cv2.imencode('.jpg', frame, jpeg_params)
-        decompressed_frame = cv2.imdecode(frame_jpeg, cv2.IMREAD_COLOR)
+        return frame_png
 
-        return decompressed_frame
+    def applyEffect(self, frame, effect_type):
+        if 'GRAYSCALE' == effect_type:
+            return self.processGrayscaleFrame(frame)
+        if 'RGB' == effect_type:
+            return self.processRgbFrame(frame)
+        if 'HSV' == effect_type:
+            return self.processHsvFrame(frame)
+        return frame
