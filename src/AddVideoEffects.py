@@ -17,23 +17,23 @@ class AddVideoEffects:
         return rgbFrame
 
     def processJPG(self, frame, streaming_info):
-        effectFrame = self.applyEffect(frame,streaming_info['effectType'])
+        effect_frame = self.applyEffect(frame,streaming_info['effectType'])
         if streaming_info['compressionLevel'] != -1:
             jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, streaming_info['compressionLevel']]
-            ret, frame_jpeg = cv2.imencode('.jpg', effectFrame, jpeg_params)
+            ret, frame_jpeg = cv2.imencode('.jpg', effect_frame, jpeg_params)
         else:
-            ret, frame_jpeg = cv2.imencode('.jpg', effectFrame)
-        return frame_jpeg
+            ret, frame_jpeg = cv2.imencode('.jpg', effect_frame)
+        return [frame_jpeg, effect_frame]
 
     def processPNG(self, frame, streaming_info):
-        effectFrame = self.applyEffect(frame, streaming_info['effectType'])
+        effect_frame = self.applyEffect(frame, streaming_info['effectType'])
         if streaming_info['compressionLevel'] != -1:
             png_params = [cv2.IMWRITE_PNG_COMPRESSION, streaming_info['compressionLevel']]
-            ret, frame_png = cv2.imencode('.png', effectFrame, png_params)
+            ret, frame_png = cv2.imencode('.png', effect_frame, png_params)
         else:
-            ret, frame_png = cv2.imencode('.png', effectFrame)
+            ret, frame_png = cv2.imencode('.png', effect_frame)
 
-        return frame_png
+        return [frame_png, effect_frame]
 
     def applyEffect(self, frame, effect_type):
         if 'GRAYSCALE' == effect_type:

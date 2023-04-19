@@ -1,11 +1,12 @@
 from kafka import KafkaProducer, KafkaConsumer
 from AddVideoEffects import AddVideoEffects
+from RecordVideo import RecordVideo
 import cv2
 import json
 import threading
 
 dev_kafka_server = 'localhost:9092'
-#prod_kafka_server = '192.168.1.136:9092'
+# prod_kafka_server = '192.168.1.136:9092'
 
 start_stop_topic = 'startstoptopic'
 videotopic = 'demotopic'
@@ -14,14 +15,15 @@ videoEffects = AddVideoEffects()
 
 is_streaming = False
 streaming_info = {}
-
+camera = None
 
 def serializer(message):
     return json.dumps(message).encode('utf-8')
 
 
 class VideoProducer:
-    def __init__(self):
+    def __init__(self, record_video):
+        self.record_video = record_video
         self.kafkaProducer = KafkaProducer(
             bootstrap_servers=dev_kafka_server,
             key_serializer=serializer
@@ -38,31 +40,38 @@ class VideoProducer:
         self.streamingThread.start()
 
     def start_streaming(self):
-        camera = cv2.VideoCapture(0)
+        global camera
         print('Start Streaming')
 
         while True:
-            if is_streaming:
+            if is_streaming and camera is not None:
                 success, frame = camera.read()
                 if success:
+                    frame_to_write = None
                     if 'JPG' == streaming_info['videoFormat']:
-                        self.process_jpg_flux(frame)
+                        frame_to_write = self.process_jpg_flux(frame)
                     else:
-                        self.process_png_flux(frame)
+                        frame_to_write = self.process_png_flux(frame)
+
+                    if ('START_WRITE' == streaming_info['write_status'] or
+                            'STOP_WRITE' == streaming_info['write_status']):
+                        self.record_video.write_file(streaming_info, frame_to_write)
                 else:
                     print('Could not capture current frame')
 
     def process_jpg_flux(self, frame):
-        processFrame = videoEffects.processJPG(frame, streaming_info)
-        self.sent_process_image(processFrame, videotopic)
+        [frame_jpeg, effect_frame] = videoEffects.processJPG(frame, streaming_info)
+        self.sent_process_image(frame_jpeg, videotopic)
+        return effect_frame
 
     def process_png_flux(self, frame):
-        processFrame = videoEffects.processPNG(frame, streaming_info)
-        self.sent_process_image(processFrame, video_topic_png)
+        [frame_png, effect_frame] = videoEffects.processPNG(frame, streaming_info)
+        self.sent_process_image(frame_png, video_topic_png)
+        return effect_frame
 
     def sent_process_image(self, buffer, topic):
         memory_kb = buffer.nbytes / 1024
-        print('Memory used by the frame (KB):', memory_kb)
+        # print('Memory used by the frame (KB):', memory_kb)
         self.kafkaProducer.send(topic, key='key_message', value=buffer.tobytes())
 
     def start_stop_streaming(self):
@@ -74,7 +83,20 @@ class VideoProducer:
             streaming_info['videoFormat'] = msg.value['videoFormat']
             streaming_info['compressionLevel'] = msg.value['effects']['compressionLevel']
             streaming_info['effectType'] = msg.value['effects']['effectType']
+            streaming_info['write_status'] = msg.value['saveFileProps']['writeStatus']
+            streaming_info['file_name'] = msg.value['saveFileProps']['fileName']
+            streaming_info['file_extension'] = msg.value['saveFileProps']['fileExtension']
+            global camera
+            if is_streaming and camera is None:
+                print('Init Camera')
+                camera = cv2.VideoCapture(0)
+
+            if is_streaming is False and camera is not None:
+                print('Release Camera')
+                camera.release()
+                camera = None
 
 
 if __name__ == '__main__':
-    videoProducer = VideoProducer()
+    recordVideo = RecordVideo()
+    videoProducer = VideoProducer(recordVideo)
