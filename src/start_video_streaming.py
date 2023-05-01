@@ -17,7 +17,7 @@ videoReading = VideoReading(dev_kafka_server)
 
 is_streaming = False
 streaming_info = {}
-camera = None
+# camera = None
 
 medical_predict_topic = "medical_topic"
 is_running_medical_analyze = False
@@ -51,7 +51,8 @@ class VideoProducer:
         self.streamingThread.start()
 
     def start_streaming(self):
-        global camera
+        # global camera
+        camera = cv2.VideoCapture(0)
         print('Start Streaming')
 
         while True:
@@ -107,15 +108,15 @@ class VideoProducer:
             global is_running_medical_analyze
             is_running_medical_analyze = msg.value['effects']['medical_status'] == 'START_STREAMING'
 
-            global camera
-            if is_streaming and camera is None:
-                print('Init Camera')
-                camera = cv2.VideoCapture(1)
-
-            if is_streaming is False and camera is not None:
-                print('Release Camera')
-                camera.release()
-                camera = None
+            # global camera
+            # if is_streaming and camera is None:
+            #     print('Init Camera')
+            #     camera = cv2.VideoCapture(1)
+            #
+            # if is_streaming is False and camera is not None:
+            #     print('Release Camera')
+            #     camera.release()
+            #     camera = None
 
 
 if __name__ == '__main__':
