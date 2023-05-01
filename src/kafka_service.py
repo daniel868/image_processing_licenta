@@ -1,14 +1,17 @@
 import threading
 import json
 from kafka import KafkaConsumer, KafkaProducer
+import time
 
 dev_kafka_server = 'localhost:9092'
 video_topic = 'demotopic'
 video_topic_png = 'demotopic_png'
 auth_topic = 'authTopic'
 start_stop_topic = 'start_stop_topic'
+reading_topic = 'reading_topic'
 
-#prod_kafka_server = '192.168.1.136:9092'
+
+# prod_kafka_server = '192.168.1.136:9092'
 
 
 class KafkaService:
@@ -22,6 +25,7 @@ class KafkaService:
         self.authThreadConsumer.start()
         self.user_token = ''
         self.user_name = ''
+        self.fps = 0
 
     def serializer(message):
         return json.dumps(message).encode('utf-8')
@@ -31,11 +35,9 @@ class KafkaService:
             video_topic,
             bootstrap_servers=dev_kafka_server
         )
-        print('Start consuming')
+        print('Start consuming JPG Frames')
         for msg in consumer:
-            print('Showing new frame')
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
-
 
     def produce_png_stream(self):
         consumer = KafkaConsumer(
@@ -45,7 +47,6 @@ class KafkaService:
 
         print('Start consuming PNG frame')
         for msg in consumer:
-            print('Streaming PNG frame')
             yield (b' --frame\r\n' b'Content-type: imgae/png\r\n\r\n' + msg.value + b'\r\n')
 
     def consume_auth_credential(self):
@@ -53,3 +54,19 @@ class KafkaService:
             print('Receivend value: ' + str(message.value))
             self.user_token = message.value['token']
             self.user_name = message.value['username']
+
+    def read_file_stream(self):
+        consumer = KafkaConsumer(
+            reading_topic,
+            bootstrap_servers=dev_kafka_server
+        )
+        start_time = time.time()
+        frames = 0
+        print('Start reading')
+        for msg in consumer:
+            end_time = time.time()
+            frames = frames + 1
+            fps = frames / (end_time - start_time)
+            self.fps = fps
+            print('Frame arrived: FPS: ' + str(fps))
+            yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
