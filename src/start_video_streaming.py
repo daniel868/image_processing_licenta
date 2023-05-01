@@ -120,5 +120,10 @@ class VideoProducer:
 
 
 if __name__ == '__main__':
-    recordVideo = RecordVideo()
+    camera = cv2.VideoCapture(0)
+    frame_per_second = int(camera.get(cv2.CAP_PROP_FPS))
+    frame_size = (int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                  int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    recordVideo = RecordVideo(frame_per_second, frame_size)
+    camera.release()
     videoProducer = VideoProducer(recordVideo)
