@@ -11,20 +11,20 @@ class RecordVideo:
         self.frame_per_second = frame_per_second
         self.frame_size = frame_size
 
-        def init_write_file(self, properties_dict):
-            global file_name
-            file_name = properties_dict['file_name'] + '.' + properties_dict['file_extension']
-            global codec
-            codec = cv2.VideoWriter_fourcc(*'mp4v')
-            global out_mp4
-            custom_video_encoder_type = self.get_video_encoder_type(properties_dict)
-            if custom_video_encoder_type is not None:
-                out_mp4 = cv2.VideoWriter(file_name, codec, self.frame_per_second, self.frame_size,
-                                          custom_video_encoder_type)
-            else:
-                out_mp4 = cv2.VideoWriter(file_name, codec, self.frame_per_second, self.frame_size)
-            global isFinishWriting
-            isFinishWriting = False
+    def init_write_file(self, properties_dict):
+        global file_name
+        file_name = properties_dict['file_name'] + '.' + properties_dict['file_extension']
+        global codec
+        codec = cv2.VideoWriter_fourcc(*'mp4v')
+        global out_mp4
+        custom_video_encoder_type = self.get_video_encoder_type(properties_dict)
+        if custom_video_encoder_type is not None:
+            out_mp4 = cv2.VideoWriter(file_name, codec, self.frame_per_second, self.frame_size,
+                                      custom_video_encoder_type)
+        else:
+            out_mp4 = cv2.VideoWriter(file_name, codec, self.frame_per_second, self.frame_size)
+        global isFinishWriting
+        isFinishWriting = False
 
     def clear_write_file(self):
         global out_mp4
