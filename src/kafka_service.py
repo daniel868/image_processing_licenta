@@ -24,6 +24,8 @@ class KafkaService:
         )
         self.authThreadConsumer = threading.Thread(target=self.consume_auth_credential)
         self.authThreadConsumer.start()
+        self.metadataThread = threading.Thread(target=self.read_metadata_stream)
+        self.metadataThread.start()
         self.user_token = ''
         self.user_name = ''
         self.fps = 0

@@ -105,6 +105,7 @@ class VideoReading:
                         print('Video Ended')
 
             if is_loading_metadata:
+                print('Loading metadata')
                 file_paths = []
                 var = (os.walk(folder_path))
 
@@ -116,5 +117,6 @@ class VideoReading:
 
                 file_info = {}
                 file_info['video_paths'] = file_paths
+                print('Sending data: '+str(file_info))
                 self.videoInfoProducer.send(metadata_reading_topic, key='metadata_key', value=file_info)
                 is_loading_metadata = False

@@ -94,7 +94,7 @@ def get_video_fps():
 
 
 @app.route('/load-metadata', methods=['GET'])
-def get_video_fps():
+def get_metadata():
     json_response = json.dumps(kafka_service.metadata).encode("utf-8")
     return Response(
         json_response,
