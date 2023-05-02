@@ -3,9 +3,11 @@ import threading
 import json
 from kafka import KafkaProducer, KafkaConsumer
 import time
+import os
 
 reading_topic = 'reading_topic'
 start_reading_topic = 'start_reading_topic'
+metadata_reading_topic = 'metadata_reading_topic'
 global current_frame
 current_frame = 0
 global is_reading
@@ -13,6 +15,10 @@ is_reading = False
 global file_path
 global from_zero
 from_zero = None
+global is_loading_metadata
+is_loading_metadata = False
+global folder_path
+folder_path = ''
 
 
 def serializer(message):
@@ -38,8 +44,14 @@ class VideoReading:
         self.reading_thread = threading.Thread(target=self.read_chucked_frames)
         self.reading_thread.start()
 
+        self.videoInfoProducer = KafkaProducer(
+            bootstrap_servers=self.kafka_server,
+            key_serializer=serializer,
+            value_serializer=serializer
+        )
+
     def start_stop_reading(self):
-        global is_reading, file_path, from_zero
+        global is_reading, file_path, from_zero, is_loading_metadata, folder_path
         for msg in self.startReaderConsumer:
             print('Reading message arrived: ' + str(msg.value))
             if msg.value['readingStatus'] == 'START_READING':
@@ -53,8 +65,12 @@ class VideoReading:
                 is_reading = False
                 print('is_reading: ' + str(is_reading))
 
+            if msg.value['readingStatus'] == 'METADATA_READING':
+                is_loading_metadata = True
+                folder_path = msg.value['folderPath']
+
     def read_chucked_frames(self):
-        global current_frame, is_reading, file_path, from_zero
+        global current_frame, is_reading, file_path, from_zero, is_loading_metadata
         total_frame_count = 0
         start_time = time.time()
         while True:
@@ -88,30 +104,17 @@ class VideoReading:
                         is_reading = False
                         print('Video Ended')
 
-                # while start_frame < total_frames and is_reading:
-                #     # Set the frame position to the start frame
-                #     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-                #
-                #     # Read the frames in the current chunk
-                #     for i in range(start_frame, end_frame):
-                #         if not is_reading:
-                #             # pause the video
-                #             break
-                #         ret, frame = cap.read()
-                #         current_frame = i
-                #         if not ret:
-                #             break
-                #         # Do something with the frame, for example, display it
-                #         # cv2.imshow('frame', frame)
-                #         ret, frame_jpeg = cv2.imencode('.jpg', frame)
-                #         if ret:
-                #             self.readerProducer.send(reading_topic, key='key_reader_frame', value=frame_jpeg.tobytes())
-                #         print('Current frame count: ' + str(current_frame))
-                #         if current_frame == (total_frames - 1):
-                #             is_reading = False
-                #             print('Video Ended')
-                #     # cv2.waitKey(25)
-                #
-                #     # Set the start and end frames for the next chunk
-                #     start_frame = end_frame
-                #     end_frame = min(start_frame + chunk_size, total_frames)
+            if is_loading_metadata:
+                file_paths = []
+                var = (os.walk(folder_path))
+
+                for root, directories, files in os.walk(folder_path):
+                    for filename in files:
+                        if filename.endswith('.mp4'):
+                            file_path = os.path.join(root, filename)
+                            file_paths.append(file_path)
+
+                file_info = {}
+                file_info['video_paths'] = file_paths
+                self.videoInfoProducer.send(metadata_reading_topic, key='metadata_key', value=file_info)
+                is_loading_metadata = False

@@ -9,6 +9,7 @@ video_topic_png = 'demotopic_png'
 auth_topic = 'authTopic'
 start_stop_topic = 'start_stop_topic'
 reading_topic = 'reading_topic'
+metadata_reading_topic = 'metadata_reading_topic'
 
 
 # prod_kafka_server = '192.168.1.136:9092'
@@ -26,6 +27,7 @@ class KafkaService:
         self.user_token = ''
         self.user_name = ''
         self.fps = 0
+        self.metadata = {}
 
     def serializer(message):
         return json.dumps(message).encode('utf-8')
@@ -70,3 +72,12 @@ class KafkaService:
             self.fps = fps
             print('Frame arrived: FPS: ' + str(fps))
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
+
+    def read_metadata_stream(self):
+        consumer = KafkaConsumer(
+            metadata_reading_topic,
+            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+        )
+        for msg in consumer:
+            print('Value arrived: ' + msg.value)
+            self.metadata['video_paths'] = msg.value['video_paths']

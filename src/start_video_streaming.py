@@ -108,16 +108,6 @@ class VideoProducer:
             global is_running_medical_analyze
             is_running_medical_analyze = msg.value['effects']['medical_status'] == 'START_STREAMING'
 
-            # global camera
-            # if is_streaming and camera is None:
-            #     print('Init Camera')
-            #     camera = cv2.VideoCapture(1)
-            #
-            # if is_streaming is False and camera is not None:
-            #     print('Release Camera')
-            #     camera.release()
-            #     camera = None
-
 
 if __name__ == '__main__':
     camera = cv2.VideoCapture(0)
