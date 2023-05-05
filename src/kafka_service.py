@@ -22,6 +22,11 @@ class KafkaService:
             bootstrap_servers=dev_kafka_server,
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
+        self.metadataConsumer = KafkaConsumer(
+            metadata_reading_topic,
+            bootstrap_servers=dev_kafka_server,
+            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+        )
         self.authThreadConsumer = threading.Thread(target=self.consume_auth_credential)
         self.authThreadConsumer.start()
         self.metadataThread = threading.Thread(target=self.read_metadata_stream)
@@ -76,10 +81,7 @@ class KafkaService:
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
 
     def read_metadata_stream(self):
-        consumer = KafkaConsumer(
-            metadata_reading_topic,
-            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-        )
-        for msg in consumer:
-            print('Value arrived: ' + msg.value)
+
+        for msg in self.metadataConsumer:
+            print('Value arrived: ' + str(msg.value))
             self.metadata['video_paths'] = msg.value['video_paths']
