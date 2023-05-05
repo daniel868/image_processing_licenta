@@ -20,13 +20,16 @@ class AddVideoEffects:
         return rgbFrame
 
     def processJPG(self, frame, streaming_info):
-        effect_frame = self.applyEffect(frame, streaming_info['effectType'])
-        if streaming_info['compressionLevel'] != -1:
-            jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, streaming_info['compressionLevel']]
-            ret, frame_jpeg = cv2.imencode('.jpg', effect_frame, jpeg_params)
-        else:
-            ret, frame_jpeg = cv2.imencode('.jpg', effect_frame)
-        return [frame_jpeg, effect_frame]
+        try:
+            effect_frame = self.applyEffect(frame, streaming_info['effectType'])
+            if streaming_info['compressionLevel'] != -1:
+                jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, streaming_info['compressionLevel']]
+                ret, frame_jpeg = cv2.imencode('.jpg', effect_frame, jpeg_params)
+            else:
+                ret, frame_jpeg = cv2.imencode('.jpg', effect_frame)
+            return [frame_jpeg, effect_frame]
+        except Exception as e:
+            print(e)
 
     def processPNG(self, frame, streaming_info):
         effect_frame = self.applyEffect(frame, streaming_info['effectType'])
