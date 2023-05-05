@@ -29,7 +29,8 @@ class AddVideoEffects:
                 ret, frame_jpeg = cv2.imencode('.jpg', effect_frame)
             return [frame_jpeg, effect_frame]
         except Exception as e:
-            print(e)
+            ret, frame_jpeg = cv2.imencode('.jpg', frame)
+            return [frame_jpeg, frame]
 
     def processPNG(self, frame, streaming_info):
         effect_frame = self.applyEffect(frame, streaming_info['effectType'])
