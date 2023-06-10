@@ -74,28 +74,10 @@ def isUserAuthenticated():
     return response.status_code == 200
 
 
-@app.route('/medical-info', methods=['GET'])
-def medical_information():
-    json_response = json.dumps(medical_predict_service.med_prediction).encode("utf-8")
-    return Response(
-        json_response,
-        mimetype="application/json"
-    )
-
-
 @app.route('/video-fps', methods=['GET'])
 def get_video_fps():
     response = {'FPS': round(kafka_service.fps, 2)}
     json_response = json.dumps(response).encode("utf-8")
-    return Response(
-        json_response,
-        mimetype="application/json"
-    )
-
-
-@app.route('/load-metadata', methods=['GET'])
-def get_metadata():
-    json_response = json.dumps(kafka_service.metadata).encode("utf-8")
     return Response(
         json_response,
         mimetype="application/json"

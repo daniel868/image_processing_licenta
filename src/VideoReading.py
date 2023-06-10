@@ -107,16 +107,45 @@ class VideoReading:
             if is_loading_metadata:
                 print('Loading metadata')
                 file_paths = []
-                var = (os.walk(folder_path))
 
-                for root, directories, files in os.walk(folder_path):
-                    for filename in files:
-                        if filename.endswith('.mp4'):
-                            file_path = os.path.join(root, filename)
-                            file_paths.append(file_path)
+                files = os.listdir(folder_path)
+                for filename in files:
+                    if filename.endswith('.mp4') or filename.endswith('.avi'):
+                        file_path = os.path.join(folder_path, filename)
+                        file_paths.append(file_path)
+
+                try:
+                    updated_json_file = self.update_json_files(file_paths)
+                except Exception as e:
+                    print('Could not update json file ', str(e))
 
                 file_info = {}
                 file_info['video_paths'] = file_paths
-                print('Sending data: '+str(file_info))
+                file_info['json_video_paths'] = updated_json_file
+                print('Sending data: ' + str(file_info))
                 self.videoInfoProducer.send(metadata_reading_topic, key='metadata_key', value=file_info)
                 is_loading_metadata = False
+
+    def update_json_files(self, file_paths):
+        json_file_path = "C:\\Users\\danit\\Documents\\Licenta\\ImageProcessing\\src\\videos.json"
+        print('Start updating json file')
+
+        with open(json_file_path, "r") as json_file:
+            data = json.load(json_file)
+
+        for item in data:
+            current_videos_paths = item['videosPaths']
+            temp_to_delete = []
+            for video in current_videos_paths:
+                print(video['path_name'])
+                if video['path_name'] not in file_paths:
+                    temp_to_delete.append(video)
+
+            for tempVideo in temp_to_delete:
+                current_videos_paths.remove(tempVideo)
+
+        with open(json_file_path, "w") as json_file:
+            json.dump(data, json_file)
+
+        print('Finishing updating json file')
+        return data

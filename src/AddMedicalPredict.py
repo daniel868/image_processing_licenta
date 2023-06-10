@@ -1,10 +1,12 @@
-from kafka import KafkaConsumer
+from kafka import KafkaConsumer, KafkaProducer
 import cv2
 import numpy as np
 from keras.models import load_model
 import threading
+import json
 
 medical_predict_topic = "medical_topic"
+medical_producer = "medical_producer_topic"
 dev_kafka_server = 'localhost:9092'
 prod_kafka_server = 'localhost:9092'
 
@@ -25,11 +27,20 @@ skin_diseases = ['akiec',
                  ]
 
 
+def serializer(message):
+    return json.dumps(message).encode('utf-8')
+
+
 class AddMedicalPredict:
     def __init__(self):
         self.medical_predict_consumer = KafkaConsumer(
             medical_predict_topic,
             bootstrap_servers=dev_kafka_server
+        )
+        self.medical_predict_producer = KafkaProducer(
+            bootstrap_servers=dev_kafka_server,
+            key_serializer=serializer,
+            value_serializer=serializer
         )
         self.med_prediction = {}
 
@@ -39,6 +50,7 @@ class AddMedicalPredict:
 
     def subscribe_to_consumer(self):
         for message in self.medical_predict_consumer:
+            print('start medical predict')
             frame = cv2.imdecode(np.fromstring(message.value, dtype=np.uint8), cv2.IMREAD_COLOR)
             self.process_frames(frame)
 
@@ -61,6 +73,7 @@ class AddMedicalPredict:
         value = sum(prediction[0, :])
 
         self.med_prediction = self.calculate_class_probabilities(prediction[0, :], value)
+        self.medical_predict_producer.send(medical_producer, self.med_prediction)
 
     def calculate_class_probabilities(self, prediction, sum):
         max_class = {}

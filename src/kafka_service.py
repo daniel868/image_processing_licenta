@@ -81,7 +81,7 @@ class KafkaService:
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
 
     def read_metadata_stream(self):
-
-        for msg in self.metadataConsumer:
-            print('Value arrived: ' + str(msg.value))
-            self.metadata['video_paths'] = msg.value['video_paths']
+        print('')
+        # for msg in self.metadataConsumer:
+        #     print('Value arrived: ' + str(msg.value))
+        #     self.metadata['video_paths'] = msg.value['video_paths']

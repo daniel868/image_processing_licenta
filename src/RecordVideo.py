@@ -1,4 +1,5 @@
 import cv2
+import json
 
 file_name = None
 codec = None
@@ -13,9 +14,11 @@ class RecordVideo:
 
     def init_write_file(self, properties_dict):
         global file_name
-        file_name = properties_dict['file_name'] + '.' + properties_dict['file_extension']
+        # file_name = properties_dict['file_name'] + '.' + properties_dict['file_extension']
+        file_name = properties_dict['file_name'] + '.mp4'
         global codec
         codec = cv2.VideoWriter_fourcc(*'mp4v')
+        # codec = cv2.VideoWriter_fourcc(*'RGBA')
         global out_mp4
         custom_video_encoder_type = self.get_video_encoder_type(properties_dict)
         if custom_video_encoder_type is not None:
@@ -52,6 +55,48 @@ class RecordVideo:
             print('Finishing saving to disk')
             isFinishWriting = True
             self.clear_write_file()
+            self.add_into_json_file(properties_dict['base_path'],
+                                    properties_dict['file_name'],
+                                    properties_dict['user_id'])
+
+    def add_into_json_file(self, base_path, movie_name, movie_user_id):
+        json_file_path = "src\\videos.json"
+        windows_delimiter = '\\'
+        linux_delimiter = '/'
+        delimiter = linux_delimiter if linux_delimiter in base_path else windows_delimiter
+        path_to_add = base_path + delimiter + movie_name + ".mp4"
+
+        with open(json_file_path, "r") as json_file:
+            data = json.load(json_file)
+
+        added = False
+
+        for item in data:
+            user_id = item['userId']
+
+            if user_id == movie_user_id:
+                current_videos_paths = item['videosPaths']
+                new_movie_path = {"path_name": path_to_add}
+                print('Added new movie to user: ' + str(movie_user_id) + ' ' + str(new_movie_path))
+                current_videos_paths.append(new_movie_path)
+                added = True
+            break
+
+        if added is not True:
+            # add a new user object type
+            print('Add a new object user')
+            user_movie_data = {
+                "userId": movie_user_id,
+                "videosPaths": [
+                    {
+                        "path_name": path_to_add
+                    }
+                ]
+            }
+            data.append(user_movie_data)
+
+        with open(json_file_path, "w") as json_file:
+            json.dump(data, json_file)
 
     def get_video_encoder_type(self, properties_dict):
         if 'GRAYSCALE' == properties_dict['effectType']:

@@ -104,14 +104,16 @@ class VideoProducer:
             streaming_info['effectType'] = msg.value['effects']['effectType']
             streaming_info['write_status'] = msg.value['saveFileProps']['writeStatus']
             streaming_info['file_name'] = msg.value['saveFileProps']['fileName']
-            streaming_info['file_extension'] = msg.value['saveFileProps']['fileExtension']
             global is_running_medical_analyze
             is_running_medical_analyze = msg.value['effects']['medical_status'] == 'START_STREAMING'
+            streaming_info['base_path'] = msg.value['folderPath']
+            streaming_info['user_id'] = msg.value['userId']
 
 
 if __name__ == '__main__':
     camera = cv2.VideoCapture(0)
-    frame_per_second = int(camera.get(cv2.CAP_PROP_FPS))
+    # frame_per_second = int(camera.get(cv2.CAP_PROP_FPS))
+    frame_per_second = 5
     frame_size = (int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
                   int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     recordVideo = RecordVideo(frame_per_second, frame_size)
