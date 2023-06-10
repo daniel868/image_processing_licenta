@@ -114,6 +114,7 @@ class VideoReading:
                         file_path = os.path.join(folder_path, filename)
                         file_paths.append(file_path)
 
+                updated_json_file = None
                 try:
                     updated_json_file = self.update_json_files(file_paths)
                 except Exception as e:
@@ -121,7 +122,7 @@ class VideoReading:
 
                 file_info = {}
                 file_info['video_paths'] = file_paths
-                file_info['json_video_paths'] = updated_json_file
+                file_info['json_video_paths'] = updated_json_file if updated_json_file is not None else ''
                 print('Sending data: ' + str(file_info))
                 self.videoInfoProducer.send(metadata_reading_topic, key='metadata_key', value=file_info)
                 is_loading_metadata = False
