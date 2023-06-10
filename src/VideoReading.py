@@ -128,7 +128,7 @@ class VideoReading:
                 is_loading_metadata = False
 
     def update_json_files(self, file_paths):
-        json_file_path = "C:\\Users\\danit\\Documents\\Licenta\\ImageProcessing\\src\\videos.json"
+        json_file_path = "videos.json"
         print('Start updating json file')
 
         with open(json_file_path, "r") as json_file:
