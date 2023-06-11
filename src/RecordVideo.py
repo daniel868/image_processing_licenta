@@ -70,33 +70,35 @@ class RecordVideo:
             data = json.load(json_file)
 
         added = False
+        try:
+            for item in data:
+                user_id = item['userId']
 
-        for item in data:
-            user_id = item['userId']
+                if user_id == movie_user_id:
+                    current_videos_paths = item['videosPaths']
+                    new_movie_path = {"path_name": path_to_add}
+                    print('Added new movie to user: ' + str(movie_user_id) + ' ' + str(new_movie_path))
+                    current_videos_paths.append(new_movie_path)
+                    added = True
+                break
 
-            if user_id == movie_user_id:
-                current_videos_paths = item['videosPaths']
-                new_movie_path = {"path_name": path_to_add}
-                print('Added new movie to user: ' + str(movie_user_id) + ' ' + str(new_movie_path))
-                current_videos_paths.append(new_movie_path)
-                added = True
-            break
+            if added is not True:
+                # add a new user object type
+                print('Add a new object user')
+                user_movie_data = {
+                    "userId": movie_user_id,
+                    "videosPaths": [
+                        {
+                            "path_name": path_to_add
+                        }
+                    ]
+                }
+                data.append(user_movie_data)
 
-        if added is not True:
-            # add a new user object type
-            print('Add a new object user')
-            user_movie_data = {
-                "userId": movie_user_id,
-                "videosPaths": [
-                    {
-                        "path_name": path_to_add
-                    }
-                ]
-            }
-            data.append(user_movie_data)
-
-        with open(json_file_path, "w") as json_file:
-            json.dump(data, json_file)
+            with open(json_file_path, "w") as json_file:
+                json.dump(data, json_file)
+        except Exception as e:
+            print('Could not insert into json file')
 
     def get_video_encoder_type(self, properties_dict):
         if 'GRAYSCALE' == properties_dict['effectType']:
