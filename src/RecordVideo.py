@@ -60,7 +60,7 @@ class RecordVideo:
                                     properties_dict['user_id'])
 
     def add_into_json_file(self, base_path, movie_name, movie_user_id):
-        json_file_path = "src\\videos.json"
+        json_file_path = "videos.json"
         windows_delimiter = '\\'
         linux_delimiter = '/'
         delimiter = linux_delimiter if linux_delimiter in base_path else windows_delimiter
