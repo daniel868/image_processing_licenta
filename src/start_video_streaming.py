@@ -22,6 +22,9 @@ streaming_info = {}
 medical_predict_topic = "medical_topic"
 is_running_medical_analyze = False
 
+board_status_topic = "board_status_topic_request"
+board_status_topic_result = "board_status_topic_result"
+
 
 def serializer(message):
     return json.dumps(message).encode('utf-8')
@@ -44,11 +47,27 @@ class VideoProducer:
             key_serializer=serializer
         )
 
+        self.kafkaStatusConsumer = KafkaConsumer(
+            board_status_topic,
+            bootstrap_servers=dev_kafka_server,
+            key_serializer=serializer,
+            value_serializer=lambda x: json.loads(x.decode('utf-8'))
+        )
+
+        self.kafkaStatusProducer = KafkaProducer(
+            bootstrap_servers=dev_kafka_server,
+            key_serializer=serializer,
+            value_deserializer=serializer
+        )
+
         self.startStopThread = threading.Thread(target=self.start_stop_streaming)
         self.startStopThread.start()
 
         self.streamingThread = threading.Thread(target=self.start_streaming)
         self.streamingThread.start()
+
+        self.statusThread = threading.Thread(target=self.handle_board_status)
+        self.statusThread.start()
 
     def start_streaming(self):
         # global camera
@@ -109,11 +128,18 @@ class VideoProducer:
             streaming_info['base_path'] = msg.value['folderPath']
             streaming_info['user_id'] = msg.value['userId']
 
+    def handle_board_status(self):
+        for msg in self.kafkaStatusConsumer:
+            if msg is not None:
+                file_info = {'status': 'connected'}
+                print('Sending status update to web')
+                self.kafkaStatusProducer.send(board_status_topic_result, key='status_update', value=file_info)
+
 
 if __name__ == '__main__':
     camera = cv2.VideoCapture(0)
     # frame_per_second = int(camera.get(cv2.CAP_PROP_FPS))
-    frame_per_second = 5
+    frame_per_second = 8
     frame_size = (int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
                   int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     recordVideo = RecordVideo(frame_per_second, frame_size)
