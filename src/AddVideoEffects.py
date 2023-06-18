@@ -26,7 +26,8 @@ class AddVideoEffects:
                 jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, streaming_info['compressionLevel']]
                 ret, frame_jpeg = cv2.imencode('.jpg', effect_frame, jpeg_params)
             else:
-                ret, frame_jpeg = cv2.imencode('.jpg', effect_frame)
+                jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, 50]
+                ret, frame_jpeg = cv2.imencode('.jpg', effect_frame, jpeg_params)
             return [frame_jpeg, effect_frame]
         except Exception as e:
             ret, frame_jpeg = cv2.imencode('.jpg', frame)
