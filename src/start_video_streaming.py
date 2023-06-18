@@ -56,7 +56,7 @@ class VideoProducer:
         self.kafkaStatusProducer = KafkaProducer(
             bootstrap_servers=dev_kafka_server,
             key_serializer=serializer,
-            value_deserializer=serializer
+            value_serializer=serializer
         )
 
         self.startStopThread = threading.Thread(target=self.start_stop_streaming)
