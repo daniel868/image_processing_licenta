@@ -50,7 +50,8 @@ class VideoProducer:
         self.kafkaStatusConsumer = KafkaConsumer(
             board_status_topic,
             bootstrap_servers=dev_kafka_server,
-            value_serializer=lambda x: json.loads(x.decode('utf-8'))
+            key_serializer=serializer,
+            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
 
         self.kafkaStatusProducer = KafkaProducer(
