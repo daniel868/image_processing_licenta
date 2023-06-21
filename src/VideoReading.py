@@ -117,7 +117,7 @@ class VideoReading:
 
                 updated_json_file = None
                 try:
-                    self.update_file_info_into_json_files()
+                    # self.update_file_info_into_json_files()
                     updated_json_file = self.update_json_files(file_paths)
                 except Exception as e:
                     print('Could not update json file ', str(e))
