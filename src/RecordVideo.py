@@ -71,6 +71,7 @@ class RecordVideo:
 
         added = False
         try:
+            print('Try to add for user with id: '+str(movie_user_id))
             for item in data:
                 user_id = item['userId']
 
@@ -83,6 +84,7 @@ class RecordVideo:
                 break
 
             if added is not True:
+                print('Movie with user_id ' + str(movie_user_id) + ' not found')
                 # add a new user object type
                 print('Add a new object user')
                 user_movie_data = {
