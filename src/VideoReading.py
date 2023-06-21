@@ -4,6 +4,7 @@ import json
 from kafka import KafkaProducer, KafkaConsumer
 import time
 import os
+from moviepy.editor import VideoFileClip
 
 reading_topic = 'reading_topic'
 start_reading_topic = 'start_reading_topic'
@@ -116,6 +117,7 @@ class VideoReading:
 
                 updated_json_file = None
                 try:
+                    self.update_file_info_into_json_files()
                     updated_json_file = self.update_json_files(file_paths)
                 except Exception as e:
                     print('Could not update json file ', str(e))
@@ -150,3 +152,26 @@ class VideoReading:
 
         print('Finishing updating json file')
         return data
+
+    def update_file_info_into_json_files(self):
+
+        print('Start updating json file info')
+        json_file_path = "videos.json"
+
+        with open(json_file_path, "r") as json_file:
+            data = json.load(json_file)
+
+        for item in data:
+            current_videos_paths = item['videosPaths']
+            for item2 in current_videos_paths:
+                path = item2['path_name']
+                file_size = os.path.getsize(path) / (1024 * 1024)
+                item2['file_size'] = format(file_size, ".2f")
+                video = VideoFileClip(path)
+                duration = video.duration
+                item2['duration'] = str(duration)
+
+        with open(json_file_path, "w") as json_file:
+            json.dump(data, json_file)
+
+        print('Finishing updating json file info')
