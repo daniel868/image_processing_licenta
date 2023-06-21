@@ -81,7 +81,7 @@ class RecordVideo:
                     print('Added new movie to user: ' + str(movie_user_id) + ' ' + str(new_movie_path))
                     current_videos_paths.append(new_movie_path)
                     added = True
-                break
+                    break
 
             if added is not True:
                 print('Movie with user_id ' + str(movie_user_id) + ' not found')
