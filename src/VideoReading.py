@@ -4,7 +4,7 @@ import json
 from kafka import KafkaProducer, KafkaConsumer
 import time
 import os
-from moviepy.editor import VideoFileClip
+import subprocess
 
 reading_topic = 'reading_topic'
 start_reading_topic = 'start_reading_topic'
@@ -117,7 +117,7 @@ class VideoReading:
 
                 updated_json_file = None
                 try:
-                    # self.update_file_info_into_json_files()
+                    self.update_file_info_into_json_files()
                     updated_json_file = self.update_json_files(file_paths)
                 except Exception as e:
                     print('Could not update json file ', str(e))
@@ -167,11 +167,18 @@ class VideoReading:
                 path = item2['path_name']
                 file_size = os.path.getsize(path) / (1024 * 1024)
                 item2['file_size'] = format(file_size, ".2f")
-                video = VideoFileClip(path)
-                duration = video.duration
+                duration = self.get_file_duration(path)
                 item2['duration'] = str(duration)
 
         with open(json_file_path, "w") as json_file:
             json.dump(data, json_file)
 
         print('Finishing updating json file info')
+
+    def get_file_duration(self, filename):
+        result = subprocess.check_output(
+            f'ffprobe -v quiet -show_streams -select_streams v:0 -of json "{filename}"',
+            shell=True).decode()
+        fields = json.loads(result)['streams'][0]
+        duration = fields['duration']
+        return format(float(duration), ".2f")
