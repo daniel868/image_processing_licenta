@@ -117,8 +117,11 @@ class VideoReading:
 
                 updated_json_file = None
                 try:
+                    self.update_json_files(file_paths)
                     self.update_file_info_into_json_files()
-                    updated_json_file = self.update_json_files(file_paths)
+                    with open("videos.json", "r") as json_file:
+                        data = json.load(json_file)
+                    updated_json_file = data
                 except Exception as e:
                     print('Could not update json file ', str(e))
 
