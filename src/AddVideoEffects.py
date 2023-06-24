@@ -40,7 +40,7 @@ class AddVideoEffects:
             ret, frame_png = cv2.imencode('.png', effect_frame, png_params)
         else:
             png_params = [cv2.IMWRITE_PNG_COMPRESSION, 80]
-            ret, frame_png = cv2.imencode('.png', effect_frame, png_params)
+            ret, frame_png = cv2.imencode('.jpg', effect_frame, png_params)
 
         return [frame_png, effect_frame]
 
