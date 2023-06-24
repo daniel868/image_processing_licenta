@@ -1,9 +1,9 @@
 import threading
 import json
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer
 import time
 
-dev_kafka_server = 'localhost:9092'
+
 video_topic = 'demotopic'
 video_topic_png = 'demotopic_png'
 auth_topic = 'authTopic'
@@ -12,11 +12,9 @@ reading_topic = 'reading_topic'
 metadata_reading_topic = 'metadata_reading_topic'
 
 
-# prod_kafka_server = '192.168.1.136:9092'
-
-
 class KafkaService:
-    def __init__(self):
+    def __init__(self, dev_kafka_server):
+        self.dev_kafka_server = dev_kafka_server
         self.kafkaAuthConsumer = KafkaConsumer(
             auth_topic,
             bootstrap_servers=dev_kafka_server,
@@ -29,8 +27,6 @@ class KafkaService:
         )
         self.authThreadConsumer = threading.Thread(target=self.consume_auth_credential)
         self.authThreadConsumer.start()
-        self.metadataThread = threading.Thread(target=self.read_metadata_stream)
-        self.metadataThread.start()
         self.user_token = ''
         self.user_name = ''
         self.fps = 0
@@ -42,7 +38,7 @@ class KafkaService:
     def produce_video_stream(self):
         consumer = KafkaConsumer(
             video_topic,
-            bootstrap_servers=dev_kafka_server
+            bootstrap_servers=self.dev_kafka_server
         )
         print('Start consuming JPG Frames')
         for msg in consumer:
@@ -51,7 +47,7 @@ class KafkaService:
     def produce_png_stream(self):
         consumer = KafkaConsumer(
             video_topic_png,
-            bootstrap_servers=dev_kafka_server
+            bootstrap_servers=self.dev_kafka_server
         )
 
         print('Start consuming PNG frame')
@@ -67,7 +63,7 @@ class KafkaService:
     def read_file_stream(self):
         consumer = KafkaConsumer(
             reading_topic,
-            bootstrap_servers=dev_kafka_server
+            bootstrap_servers=self.dev_kafka_server
         )
         start_time = time.time()
         frames = 0
@@ -79,9 +75,3 @@ class KafkaService:
             self.fps = fps
             print('Frame arrived: FPS: ' + str(fps))
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + msg.value + b'\r\n')
-
-    def read_metadata_stream(self):
-        print('')
-        # for msg in self.metadataConsumer:
-        #     print('Value arrived: ' + str(msg.value))
-        #     self.metadata['video_paths'] = msg.value['video_paths']

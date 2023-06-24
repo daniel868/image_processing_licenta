@@ -7,7 +7,6 @@ import json
 import threading
 
 dev_kafka_server = 'localhost:9092'
-# prod_kafka_server = '192.168.1.136:9092'
 
 start_stop_topic = 'startstoptopic'
 videotopic = 'demotopic'
@@ -138,7 +137,6 @@ class VideoProducer:
 if __name__ == '__main__':
     camera = cv2.VideoCapture(0)
     frame_per_second = int(camera.get(cv2.CAP_PROP_FPS))
-    # frame_per_second = 8
     frame_size = (int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
                   int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     recordVideo = RecordVideo(frame_per_second, frame_size)

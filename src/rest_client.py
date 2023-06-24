@@ -1,13 +1,12 @@
 from flask import Flask, request, Response, url_for, redirect
 from kafka_service import KafkaService
-from AddMedicalPredict import AddMedicalPredict
 import requests
 import json
+import sys
 
 app = Flask(__name__)
 is_authenticated = False
-kafka_service = KafkaService()
-medical_predict_service = AddMedicalPredict()
+kafka_service = KafkaService(sys.argv[1])
 
 
 @app.route('/failed', methods=['GET'])
@@ -19,14 +18,14 @@ def loginFailed():
 def video():
     global is_authenticated
     args = request.args
-    if (args.get("userToken") is None):
+    if args.get("userToken") is None:
         return redirect(url_for('loginFailed'))
 
-    if (is_authenticated == False):
+    if is_authenticated == False:
 
         is_authenticated = isUserAuthenticated()
 
-        if (is_authenticated == False):
+        if is_authenticated == False:
             return redirect(url_for('loginFailed'))
 
     print('Redirecting to video jpg endpoint')
@@ -40,14 +39,14 @@ def video():
 def video_png():
     global is_authenticated
     args = request.args
-    if (args.get("userToken") is None):
+    if args.get("userToken") is None:
         return redirect(url_for('loginFailed'))
 
-    if (is_authenticated == False):
+    if is_authenticated == False:
 
         is_authenticated = isUserAuthenticated()
 
-        if (is_authenticated == False):
+        if is_authenticated == False:
             return redirect(url_for('loginFailed'))
 
     print('Redirecting to video png endpoint')
@@ -82,6 +81,7 @@ def get_video_fps():
         json_response,
         mimetype="application/json"
     )
+
 
 if __name__ == "__main__":
     app.run()
